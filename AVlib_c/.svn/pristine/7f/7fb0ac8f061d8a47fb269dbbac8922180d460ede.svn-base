@@ -1,0 +1,387 @@
+#include "xColorSpace.h"
+
+namespace AVlib {
+
+const int32 xColorSpace::m_RGB2YUV_int32[4][9] = 
+{
+  //{Y_R, Y_G, Y_B, U_R, U_G ,U_B, V_R, V_B, V_G}  
+  {(int32)(65536 * 0.29900), (int32)(65536 * 0.58700), (int32)(65536 * 0.11400), (int32)(65536 *-0.16874), (int32)(65536 *-0.33126), (int32)(65536 * 0.50000), (int32)(65536 * 0.50000), (int32)(65536 *-0.41869), (int32)(65536 *-0.08131), }, //BT.601 / JPEG
+  {(int32)(65536 * 0.21260), (int32)(65536 * 0.71520), (int32)(65536 * 0.07220), (int32)(65536 *-0.11457), (int32)(65536 *-0.38543), (int32)(65536 * 0.50000), (int32)(65536 * 0.50000), (int32)(65536 *-0.45415), (int32)(65536 *-0.04585), }, //BT.709
+  {(int32)(65536 * 0.25   ), (int32)(65536 * 0.75   ), (int32)(65536 * 0.25   ), (int32)(65536 * 0      ), (int32)(65536 *-1      ), (int32)(65536 * 1      ), (int32)(65536 * 1      ), (int32)(65536 *-1      ), (int32)(65536 * 0      ), }, //JPEG2000
+  {(int32)(65536 * 0.21200), (int32)(65536 * 0.70100), (int32)(65536 * 0.08700), (int32)(65536 *-0.11610), (int32)(65536 *-0.38390), (int32)(65536 * 0.50000), (int32)(65536 * 0.50000), (int32)(65536 *-0.44480), (int32)(65536 *-0.05520), }, //SMPTE240M
+};
+
+const int32 xColorSpace::m_YUV2RGB_int32[4][9] =
+{
+  //{R_Y, R_U, R_V, G_Y, G_U, G_V, B_Y, B_U, B_V}
+  {(int32)(65536 * 1.0    ), (int32)(65536 * 0      ), (int32)(65536 * 1.402  ), (int32)(65536 * 1.0    ), (int32)(65536 *-0.34414), (int32)(65536 *-0.71414), (int32)(65536 * 1.0    ), (int32)(65536 * 1.772  ), (int32)(65536 *0       ), }, //BT.601 / JPEG
+  {(int32)(65536 * 1.0    ), (int32)(65536 * 0      ), (int32)(65536 * 1.5748 ), (int32)(65536 * 1.0    ), (int32)(65536 *-0.18732), (int32)(65536 *-0.46812), (int32)(65536 * 1.0    ), (int32)(65536 * 1.8556 ), (int32)(65536 *0       ), }, //BT.709
+  {(int32)(65536 * 1.0    ), (int32)(65536 *-0.25   ), (int32)(65536 * 0.75   ), (int32)(65536 * 1.0    ), (int32)(65536 *-0.25   ), (int32)(65536 *-0.25   ), (int32)(65536 * 1.0    ), (int32)(65536 * 0.75   ), (int32)(65536 *-0.25   ), }, //JPEG2000
+  {(int32)(65536 * 1.0    ), (int32)(65536 * 0      ), (int32)(65536 * 1.576  ), (int32)(65536 * 1.0    ), (int32)(65536 *-0.22662), (int32)(65536 *-0.47662), (int32)(65536 * 1.0    ), (int32)(65536 * 1.826  ), (int32)(65536 *0       ), }, //SMPTE240M
+};
+
+const int32 xColorSpace::m_RGB2XYZ_int32[1][9] = 
+{
+  //{X_R, X_G, X_B, Y_R, Y_G ,Y_B, Z_R, Z_B, Z_G}  
+  {(int32)(65536 * 0.4124564), (int32)(65536 * 0.3575761), (int32)(65536 * 0.1804375), (int32)(65536 * 0.2126729), (int32)(65536 * 0.7151522), (int32)(65536 * 0.0721750), (int32)(65536 * 0.0193339), (int32)(65536 * 0.1191920), (int32)(65536 * 0.9503041), }, //BT.601 / JPEG
+};
+
+void xColorSpace::xConvertDEF2ABC_INT32(int16* D, int16* E, int16* F, uint32 DEFStride, int16* A, int16* B, int16* C, uint32 ABCStride, uint32 Width, uint32 Height, const int32 ConvertMatrix[9])
+{
+#if X_OMP_CMP
+  #pragma omp parallel for private(i) if(Width*Height >= X_OMP_THRESHOLD)
+#endif
+  for(uint32 y=0; y<Height; y++)
+  {
+    xConvertDEF2ABC_INT32_Cont(D, E, F, A, B, C, Width, ConvertMatrix);
+    D += DEFStride;
+    E += DEFStride;
+    F += DEFStride;
+    A += ABCStride;
+    B += ABCStride;
+    C += ABCStride;
+  }
+}
+
+void xColorSpace::xConvertDEF2ABC_INT32_Cont(int16* restrict D, int16* restrict E, int16* restrict F, int16* restrict A, int16* restrict B, int16* restrict C, uint32 Length, const int32 ConvertMatrix[9])
+{
+#if (X_USE_SSE && X_SSE4_1)
+  const __m128i A_D = _mm_set1_epi32(ConvertMatrix[0]);
+  const __m128i A_E = _mm_set1_epi32(ConvertMatrix[1]);
+  const __m128i A_F = _mm_set1_epi32(ConvertMatrix[2]);
+  const __m128i B_D = _mm_set1_epi32(ConvertMatrix[3]);
+  const __m128i B_E = _mm_set1_epi32(ConvertMatrix[4]);
+  const __m128i B_F = _mm_set1_epi32(ConvertMatrix[5]);
+  const __m128i C_D = _mm_set1_epi32(ConvertMatrix[6]);
+  const __m128i C_E = _mm_set1_epi32(ConvertMatrix[7]);
+  const __m128i C_F = _mm_set1_epi32(ConvertMatrix[8]);
+  const __m128i c32768 = _mm_set1_epi32((int32)32768);
+  
+  for(uint32 i=0; i<Length; i++)
+  {
+    //load
+    __m128i d = _mm_load_si128((__m128i*)(&(D[i])));
+    __m128i e = _mm_load_si128((__m128i*)(&(E[i])));
+    __m128i f = _mm_load_si128((__m128i*)(&(F[i])));
+
+    //conver to int32
+    __m128i d_0 = _mm_cvtepi16_epi32(d);
+    __m128i d_1 = _mm_cvtepi16_epi32(_mm_srli_si128(d,8));
+    __m128i e_0 = _mm_cvtepi16_epi32(e);
+    __m128i e_1 = _mm_cvtepi16_epi32(_mm_srli_si128(e,8));
+    __m128i f_0 = _mm_cvtepi16_epi32(f);
+    __m128i f_1 = _mm_cvtepi16_epi32(_mm_srli_si128(f,8));
+
+    //calc YUV
+    __m128i a_0 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(A_D, d_0), _mm_mullo_epi32(A_E, e_0)), _mm_add_epi32(_mm_mullo_epi32(A_F, f_0), c32768)), 16);
+    __m128i a_1 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(A_D, d_1), _mm_mullo_epi32(A_E, e_1)), _mm_add_epi32(_mm_mullo_epi32(A_F, f_1), c32768)), 16);
+    __m128i b_0 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(B_D, d_0), _mm_mullo_epi32(B_E, e_0)), _mm_add_epi32(_mm_mullo_epi32(B_F, f_0), c32768)), 16);
+    __m128i b_1 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(B_D, d_1), _mm_mullo_epi32(B_E, e_1)), _mm_add_epi32(_mm_mullo_epi32(B_F, f_1), c32768)), 16);
+    __m128i c_0 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(C_D, d_0), _mm_mullo_epi32(C_E, e_0)), _mm_add_epi32(_mm_mullo_epi32(C_F, f_0), c32768)), 16);
+    __m128i c_1 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(C_D, d_1), _mm_mullo_epi32(C_E, e_1)), _mm_add_epi32(_mm_mullo_epi32(C_F, f_1), c32768)), 16);
+
+    //pack to int16
+    __m128i a = _mm_packs_epi32(a_0, a_1);
+    __m128i b = _mm_packs_epi32(b_0, b_1);
+    __m128i c = _mm_packs_epi32(c_0, c_1);
+
+    //save to output component
+    _mm_store_si128 ((__m128i*)(&(A[i])), a);
+    _mm_store_si128 ((__m128i*)(&(B[i])), b);
+    _mm_store_si128 ((__m128i*)(&(C[i])), c);
+  }
+
+  if(Length & (uint32)0x7)
+  {
+    const int32 A_Ds = ConvertMatrix[0];
+    const int32 A_Es = ConvertMatrix[1];
+    const int32 A_Fs = ConvertMatrix[2];
+    const int32 B_Ds = ConvertMatrix[3];
+    const int32 B_Es = ConvertMatrix[4];
+    const int32 B_Fs = ConvertMatrix[5];
+    const int32 C_Ds = ConvertMatrix[6];
+    const int32 C_Es = ConvertMatrix[7];
+    const int32 C_Fs = ConvertMatrix[8];
+
+    for(uint32 i=(Length & (uint32)0xFFFFFFF8); i<Length; i++)
+    {
+      int32 d = D[i];
+      int32 e = E[i];
+      int32 f = F[i];
+      int32 a = ((A_Ds*d + A_Es*e + A_Fs*f + 32768)>>16);
+      int32 b = ((B_Ds*d + B_Es*e + B_Fs*f + 32768)>>16);
+      int32 c = ((C_Ds*d + C_Es*e + C_Fs*f + 32768)>>16);
+      A[i] = (int16)a;
+      B[i] = (int16)b;
+      C[i] = (int16)c;
+    }
+  }
+#else
+  const int32 A_Ds = ConvertMatrix[0];
+  const int32 A_Es = ConvertMatrix[1];
+  const int32 A_Fs = ConvertMatrix[2];
+  const int32 B_Ds = ConvertMatrix[3];
+  const int32 B_Es = ConvertMatrix[4];
+  const int32 B_Fs = ConvertMatrix[5];
+  const int32 C_Ds = ConvertMatrix[6];
+  const int32 C_Es = ConvertMatrix[7];
+  const int32 C_Fs = ConvertMatrix[8];
+
+  for(uint32 i=0; i<Length; i++)
+  {
+    int32 d = D[i];
+    int32 e = E[i];
+    int32 f = F[i];
+    int32 a = ((A_Ds*d + A_Es*e + A_Fs*f + 32768)>>16);
+    int32 b = ((B_Ds*d + B_Es*e + B_Fs*f + 32768)>>16);
+    int32 c = ((C_Ds*d + C_Es*e + C_Fs*f + 32768)>>16);
+    A[i] = (int16)a;
+    B[i] = (int16)b;
+    C[i] = (int16)c;
+  }
+#endif
+}
+
+void xColorSpace::convertRGB2YUV(int16* R, int16* G, int16* B, uint32 RGBStride, int16* Y, int16* U, int16* V, uint32 YUVStride, uint32 Width, uint32 Height, uint32 BitDepth, eClrSpc YUVColorSpace)
+{
+#if X_OMP_CMP
+  #pragma omp parallel for private(i) if(Width*Height >= X_OMP_THRESHOLD)
+#endif
+  for(uint32 y=0; y<Height; y++)
+  {
+    convertRGB2YUV_Cont(R, G, B, Y, U, V, Width, BitDepth, YUVColorSpace);
+    R += RGBStride;
+    G += RGBStride;
+    B += RGBStride;
+    Y += YUVStride;
+    U += YUVStride;
+    V += YUVStride;
+  }
+}
+
+void xColorSpace::convertRGB2YUV_Cont(int16* restrict R, int16* restrict G, int16* restrict B, int16* restrict Y, int16* restrict U, int16* restrict V, uint32 Length, uint32 BitDepth, eClrSpc YUVColorSpace)
+{
+#if (X_USE_SSE && X_SSE4_1)
+  const __m128i Y_R = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][0]);
+  const __m128i Y_G = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][1]);
+  const __m128i Y_B = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][2]);
+  const __m128i U_R = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][3]);
+  const __m128i U_G = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][4]);
+  const __m128i U_B = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][5]);
+  const __m128i V_R = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][6]);
+  const __m128i V_G = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][7]);
+  const __m128i V_B = _mm_set1_epi32(m_RGB2YUV_int32[YUVColorSpace][8]);
+  const __m128i c32768 = _mm_set1_epi32((int32)32768);
+  const __m128i Half = _mm_set1_epi32(1<<(BitDepth-1));
+  
+  int32 SafeLength = (Length & (uint32)0xFFFFFFF8);
+  for(uint32 i=0; i<Length; i++)
+  {
+    //load
+    __m128i r = _mm_load_si128((__m128i*)(&(R[i])));
+    __m128i g = _mm_load_si128((__m128i*)(&(G[i])));
+    __m128i b = _mm_load_si128((__m128i*)(&(B[i])));
+
+    //conver to int32
+    __m128i r_0 = _mm_cvtepi16_epi32(r);
+    __m128i r_1 = _mm_cvtepi16_epi32(_mm_srli_si128(r,8));
+    __m128i g_0 = _mm_cvtepi16_epi32(g);
+    __m128i g_1 = _mm_cvtepi16_epi32(_mm_srli_si128(g,8));
+    __m128i b_0 = _mm_cvtepi16_epi32(b);
+    __m128i b_1 = _mm_cvtepi16_epi32(_mm_srli_si128(b,8));
+
+    //calc YUV
+    __m128i y_0 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(Y_R, r_0), _mm_mullo_epi32(Y_G, g_0)), _mm_add_epi32(_mm_mullo_epi32(Y_B, b_0), c32768)), 16);
+    __m128i y_1 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(Y_R, r_1), _mm_mullo_epi32(Y_G, g_1)), _mm_add_epi32(_mm_mullo_epi32(Y_B, b_1), c32768)), 16);
+    __m128i u_0 = _mm_add_epi32(_mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(U_R, r_0), _mm_mullo_epi32(U_G, g_0)), _mm_add_epi32(_mm_mullo_epi32(U_B, b_0), c32768)), 16), Half);
+    __m128i u_1 = _mm_add_epi32(_mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(U_R, r_1), _mm_mullo_epi32(U_G, g_1)), _mm_add_epi32(_mm_mullo_epi32(U_B, b_1), c32768)), 16), Half);
+    __m128i v_0 = _mm_add_epi32(_mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(V_R, r_0), _mm_mullo_epi32(V_G, g_0)), _mm_add_epi32(_mm_mullo_epi32(V_B, b_0), c32768)), 16), Half);
+    __m128i v_1 = _mm_add_epi32(_mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(V_R, r_1), _mm_mullo_epi32(V_G, g_1)), _mm_add_epi32(_mm_mullo_epi32(V_B, b_1), c32768)), 16), Half);
+
+    //pack to int16
+    __m128i y = _mm_packs_epi32(y_0, y_1);
+    __m128i u = _mm_packs_epi32(u_0, u_1);
+    __m128i v = _mm_packs_epi32(v_0, v_1);
+
+    //save to output component
+    _mm_store_si128 ((__m128i*)(&(Y[i])),y);
+    _mm_store_si128 ((__m128i*)(&(U[i])),u);
+    _mm_store_si128 ((__m128i*)(&(V[i])),v);
+  }
+
+  if(Length & (uint32)0x7)
+  {
+    const int32 Y_R = m_RGB2YUV_int32[YUVColorSpace][0];
+    const int32 Y_G = m_RGB2YUV_int32[YUVColorSpace][1];
+    const int32 Y_B = m_RGB2YUV_int32[YUVColorSpace][2];
+    const int32 U_R = m_RGB2YUV_int32[YUVColorSpace][3];
+    const int32 U_G = m_RGB2YUV_int32[YUVColorSpace][4];
+    const int32 U_B = m_RGB2YUV_int32[YUVColorSpace][5];
+    const int32 V_R = m_RGB2YUV_int32[YUVColorSpace][6];
+    const int32 V_G = m_RGB2YUV_int32[YUVColorSpace][7];
+    const int32 V_B = m_RGB2YUV_int32[YUVColorSpace][8];
+    const int32 Half= 1<<(BitDepth-1);
+
+    for(uint32 i=SafeLength; i<Length; i++)
+    {
+      int32 r = R[i];
+      int32 g = G[i];
+      int32 b = B[i];
+      int32 y = ((Y_R*r + Y_G*g + Y_B*b + 32768)>>16);
+      int32 u = ((U_R*r + U_G*g + U_B*b + 32768)>>16) + Half;
+      int32 v = ((V_R*r + V_G*g + V_B*b + 32768)>>16) + Half;
+      Y[i] = (int16)y;
+      U[i] = (int16)u;
+      V[i] = (int16)v;
+    }
+  }
+#else
+  const int32 Y_R = m_RGB2YUV_int32[YUVColorSpace][0];
+  const int32 Y_G = m_RGB2YUV_int32[YUVColorSpace][1];
+  const int32 Y_B = m_RGB2YUV_int32[YUVColorSpace][2];
+  const int32 U_R = m_RGB2YUV_int32[YUVColorSpace][3];
+  const int32 U_G = m_RGB2YUV_int32[YUVColorSpace][4];
+  const int32 U_B = m_RGB2YUV_int32[YUVColorSpace][5];
+  const int32 V_R = m_RGB2YUV_int32[YUVColorSpace][6];
+  const int32 V_G = m_RGB2YUV_int32[YUVColorSpace][7];
+  const int32 V_B = m_RGB2YUV_int32[YUVColorSpace][8];
+  const int32 Half= 1<<(BitDepth-1);
+
+  for(int32 i=0; i<Length; i++)
+  {
+    int32 r = R[i];
+    int32 g = G[i];
+    int32 b = B[i];
+    int32 y = ((Y_R*r + Y_G*g + Y_B*b + 32768)>>16);
+    int32 u = ((U_R*r + U_G*g + U_B*b + 32768)>>16) + Half;
+    int32 v = ((V_R*r + V_G*g + V_B*b + 32768)>>16) + Half;
+    Y[i] = (int16)y;
+    U[i] = (int16)u;
+    V[i] = (int16)v;
+  }
+#endif
+}
+
+void xColorSpace::convertYUV2RGB(int16* Y, int16* U, int16* V, uint32 YUVStride, int16* R, int16* G, int16* B, uint32 RGBStride, uint32 Width, uint32 Height, uint32 BitDepth, eClrSpc YUVColorSpace)
+{
+#if X_OMP_CMP
+  #pragma omp parallel for if(Width*Height >= X_OMP_THRESHOLD)
+#endif
+  for(uint32 y=0; y<Height; y++)
+  {
+    convertYUV2RGB_Cont(Y, U, V, R, G, B, Width, BitDepth, YUVColorSpace);
+    R += RGBStride;
+    G += RGBStride;
+    B += RGBStride;
+    Y += YUVStride;
+    U += YUVStride;
+    V += YUVStride;
+  }
+}
+
+void xColorSpace::convertYUV2RGB_Cont(int16* restrict Y, int16* restrict U, int16* restrict V, int16* restrict R, int16* restrict G, int16* restrict B, uint32 Length, uint32 BitDepth, eClrSpc YUVColorSpace)
+{
+#if (X_USE_SSE && X_SSE4_1)
+  const __m128i R_Y = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][0]);
+  const __m128i R_U = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][1]);
+  const __m128i R_V = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][2]);
+  const __m128i G_Y = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][3]);
+  const __m128i G_U = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][4]);
+  const __m128i G_V = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][5]);
+  const __m128i B_Y = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][6]);
+  const __m128i B_U = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][7]);
+  const __m128i B_V = _mm_set1_epi32(m_YUV2RGB_int32[YUVColorSpace][8]);
+  const __m128i c32768 = _mm_set1_epi32((int32)32768);
+  const __m128i Half= _mm_set1_epi32(1<<(BitDepth-1));
+
+  int32 SafeLength = (Length & (uint32)0xFFFFFFF8);
+  for(uint32 i=0; i<Length; i++)
+  {
+    //load
+    __m128i y = _mm_load_si128((__m128i*)(&(Y[i])));
+    __m128i u = _mm_load_si128((__m128i*)(&(U[i])));
+    __m128i v = _mm_load_si128((__m128i*)(&(V[i])));
+
+    //conver to int32
+    __m128i y_0 = _mm_cvtepi16_epi32(y);
+    __m128i y_1 = _mm_cvtepi16_epi32(_mm_srli_si128(y,8));
+    __m128i u_0 = _mm_cvtepi16_epi32(u);
+    __m128i u_1 = _mm_cvtepi16_epi32(_mm_srli_si128(u,8));
+    __m128i v_0 = _mm_cvtepi16_epi32(v);
+    __m128i v_1 = _mm_cvtepi16_epi32(_mm_srli_si128(v,8));
+
+    //calc YUV
+    __m128i r_0 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(R_Y, y_0), _mm_mullo_epi32(R_U, u_0)), _mm_add_epi32(_mm_mullo_epi32(R_V, v_0), c32768)), 16);
+    __m128i r_1 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(R_Y, y_1), _mm_mullo_epi32(R_U, u_1)), _mm_add_epi32(_mm_mullo_epi32(R_V, v_1), c32768)), 16);
+    __m128i g_0 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(G_Y, y_0), _mm_mullo_epi32(G_U, u_0)), _mm_add_epi32(_mm_mullo_epi32(G_V, v_0), c32768)), 16);
+    __m128i g_1 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(G_Y, y_1), _mm_mullo_epi32(G_U, u_1)), _mm_add_epi32(_mm_mullo_epi32(G_V, v_1), c32768)), 16);
+    __m128i b_0 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(G_Y, y_0), _mm_mullo_epi32(B_U, u_0)), _mm_add_epi32(_mm_mullo_epi32(B_V, v_0), c32768)), 16);
+    __m128i b_1 = _mm_srai_epi32(_mm_add_epi32(_mm_add_epi32(_mm_mullo_epi32(G_Y, y_1), _mm_mullo_epi32(B_U, u_1)), _mm_add_epi32(_mm_mullo_epi32(B_V, v_1), c32768)), 16);
+
+    //pack to int16
+    __m128i r = _mm_packs_epi32(r_0, r_1);
+    __m128i g = _mm_packs_epi32(g_0, g_1);
+    __m128i b = _mm_packs_epi32(b_0, b_1);
+
+    //save to output component
+    _mm_store_si128 ((__m128i*)(&(R[i])),r);
+    _mm_store_si128 ((__m128i*)(&(G[i])),g);
+    _mm_store_si128 ((__m128i*)(&(B[i])),b);
+  }
+
+  if(Length & (uint32)0x7)
+  {
+    const int32 R_Y = m_YUV2RGB_int32[YUVColorSpace][0];
+    const int32 R_U = m_YUV2RGB_int32[YUVColorSpace][1];
+    const int32 R_V = m_YUV2RGB_int32[YUVColorSpace][2];
+    const int32 G_Y = m_YUV2RGB_int32[YUVColorSpace][3];
+    const int32 G_U = m_YUV2RGB_int32[YUVColorSpace][4];
+    const int32 G_V = m_YUV2RGB_int32[YUVColorSpace][5];
+    const int32 B_Y = m_YUV2RGB_int32[YUVColorSpace][6];
+    const int32 B_U = m_YUV2RGB_int32[YUVColorSpace][7];
+    const int32 B_V = m_YUV2RGB_int32[YUVColorSpace][8];
+    const int32 Half= 1<<(BitDepth-1);
+
+    for(uint32 i=SafeLength; i<Length; i++)
+    {
+      int32 y = Y[i];
+      int32 u = U[i] - Half;
+      int32 v = V[i] - Half;
+      int32 r = ((R_Y*y + R_U*u + R_V*v + 32768)>>16);
+      int32 g = ((G_Y*y + G_U*u + G_V*v + 32768)>>16);
+      int32 b = ((B_Y*y + B_U*u + B_V*v + 32768)>>16);
+      R[i] = (int16)r;
+      G[i] = (int16)g;
+      B[i] = (int16)b;
+    }
+  }
+#else
+  const int32 R_Y = m_YUV2RGB_int32[YUVColorSpace][0];
+  const int32 R_U = m_YUV2RGB_int32[YUVColorSpace][1];
+  const int32 R_V = m_YUV2RGB_int32[YUVColorSpace][2];
+  const int32 G_Y = m_YUV2RGB_int32[YUVColorSpace][3];
+  const int32 G_U = m_YUV2RGB_int32[YUVColorSpace][4];
+  const int32 G_V = m_YUV2RGB_int32[YUVColorSpace][5];
+  const int32 B_Y = m_YUV2RGB_int32[YUVColorSpace][6];
+  const int32 B_U = m_YUV2RGB_int32[YUVColorSpace][7];
+  const int32 B_V = m_YUV2RGB_int32[YUVColorSpace][8];
+  const int32 Half= 1<<(BitDepth-1);
+
+  for(uint32 i=0; i<Length; i++)
+  {
+    int32 y = Y[i];
+    int32 u = U[i] - Half;
+    int32 v = V[i] - Half;
+    int32 r = ((R_Y*y + R_U*u + R_V*v + 32768)>>16);
+    int32 g = ((G_Y*y + G_U*u + G_V*v + 32768)>>16);
+    int32 b = ((B_Y*y + B_U*u + B_V*v + 32768)>>16);
+    R[i] = (int16)r;
+    G[i] = (int16)g;
+    B[i] = (int16)b;
+  }
+#endif
+}
+
+} //end of namespace AVLib
+
+
