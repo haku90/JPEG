@@ -299,6 +299,14 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  quantChroma->m_Pel[i][j] = tempQuant;
 	  }
   }
+  
+  int prevDC = 0;
+  int prevDC_cb = 0;
+  int prevDC_cr = 0;
+
+  int tempPrevDC = 0;
+  int tempPrevDC_cb = 0;
+  int tempPrevDC_cr = 0;
 
   //Podzial obrazu na makrobloki 8x8.
   for (int y = 0; y < SizeY/8; y++)
@@ -348,7 +356,18 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  numOfDateCB = RL(cb_tabRL, tabRL2_cb);
 		  numOfDateCR = RL(cr_tabRL, tabRL2_cr);
 
+		  //Kodowanie DC ró¿nicowe
+		  tempPrevDC = tabRL2[0];
+		  tabRL2[0] =tabRL2[0] - prevDC;
+		  prevDC = tempPrevDC;
 
+		  tempPrevDC_cb = tabRL2_cb[0];
+		  tabRL2_cb[0] = tabRL2_cb[0] - prevDC_cb;
+		  prevDC_cb = tempPrevDC_cb;
+
+		  tempPrevDC_cr = tabRL2_cr[0];
+		  tabRL2_cr[0] = tabRL2_cr[0] - prevDC_cr;
+		  prevDC_cr = tempPrevDC_cr;
 		
 	  }
   }

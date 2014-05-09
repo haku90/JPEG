@@ -1,4 +1,4 @@
-﻿Build started 2014-05-08 20:30:05.
+﻿Build started 2014-05-09 12:28:27.
      1>Project "e:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\projects\test.vcxproj" on node 2 (Build target(s)).
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I..\source\ /I..\source\lib_gen1 /I..\source\lib_gen2 /Zi /nologo /W3 /WX- /MP /Od /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:strict /Zc:wchar_t /Zc:forScope /GR- /Fo"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\\" /Fd"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\vc120.pdb" /FR"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\\" /Gd /TP /errorReport:prompt ..\source\main.cpp
@@ -16,4 +16,4 @@
 
 Build succeeded.
 
-Time Elapsed 00:00:04.14
+Time Elapsed 00:00:10.00
