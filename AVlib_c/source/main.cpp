@@ -164,6 +164,59 @@ void ZygZak2RL(xCmp* macroblockQuant, int tabRL[])
 //Bossy.
 
 //Haku
+
+class Huffman
+{
+public:
+
+	// S³owa kodowe dla b³edu predykcji w zale¿noœci od kategori, DC 
+	const static string CW_Table_DC[12];
+	// D³ugoœæ s³ów kodowych, DC
+	int  CW_Len[12];
+	// kategoryzacja kodowanych wartoœci
+	int categoryHuffman(int value)
+	{
+		int absValue = abs(value);
+		if (absValue == 0)		return 0;
+		if (absValue == 1)		return 1;
+		if (absValue <= 3)		return 2;
+		if (absValue <= 7)		return 3;
+		if (absValue <= 15)		return 4;
+		if (absValue <= 31)		return 5;
+		if (absValue <= 63)		return 6;
+		if (absValue <= 127)	return 7;
+		if (absValue <= 255)	return 8;
+		if (absValue <= 511)	return 9;
+		if (absValue <= 1023)	return 10;
+		return 11;
+
+	}
+
+
+
+	void encodeDC(int DC, char result[],int &bitLen)
+	{
+		int category = categoryHuffman(DC);
+		bitLen = CW_Len[category];
+		//strcpy(result,CW_Table_DC[category]);
+
+		int value = DC;
+		if (DC < 0)
+			value += (int)pow(2, category) - 1;
+		for (int i = bitLen - 1; i>bitLen - category - 1; i--)
+		{
+			if (value % 2 == 1)
+				result[i] = '1';
+			else
+				result[i] = '0';
+			value /= 2;
+		}
+		result[bitLen] = '\0';
+	}
+	
+};
+const string  Huffman::CW_Table_DC[12] = { '00', '010', '011', '100', '101', '110', '1110', '11110', '111110', '1111110', '11111110', '111111110' };
+
 int RL(int ZygZak[], int RL[])
 {
 	RL[0] = ZygZak[0]; // DC
@@ -206,6 +259,7 @@ int RL(int ZygZak[], int RL[])
 
 	return numOfData;
 }
+
 int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 {
   printf("Start....\n");
@@ -307,7 +361,7 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
   int tempPrevDC = 0;
   int tempPrevDC_cb = 0;
   int tempPrevDC_cr = 0;
-
+  Huffman* huff = new Huffman();
   //Podzial obrazu na makrobloki 8x8.
   for (int y = 0; y < SizeY/8; y++)
   {
@@ -368,6 +422,13 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  tempPrevDC_cr = tabRL2_cr[0];
 		  tabRL2_cr[0] = tabRL2_cr[0] - prevDC_cr;
 		  prevDC_cr = tempPrevDC_cr;
+
+		  //Kodowanie Huffman DC
+		  int bitLen = 0;
+		  char DC_encode[32] = { 0 };
+
+		  huff->encodeDC(tabRL2[0], DC_encode,bitLen);
+		  
 		
 	  }
   }
