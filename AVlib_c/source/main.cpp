@@ -217,11 +217,27 @@ void encodeDC(int DC, string* result,int &bitLen)
 				*result += "0";
 			value /= 2;
 		}
-		//result[bitLen] = '\0';
+	
 	
 
 }
-
+void encodeAC(int R, int L, string* result, int &bitLen)
+{
+	int category = categoryHuffman(L);
+	bitLen = CW_Len_AC[R][category];
+	*result += CW_Table_AC[R][category];
+	int value = L;
+	if (L < 0)
+		value += (int)pow(2, category) - 1;
+	for (int i = bitLen - 1; i>bitLen - category - 1; i--)
+	{
+		if (value % 2 == 1)
+			*result += "1";
+		else
+			*result += "0";
+		value /= 2;
+	}
+}
 };
 const string Huffman::CW_Table_DC[12] = { "00", "010", "011", "100", "101", "110", "1110", "11110", "111110",
 "1111110", "11111110", "111111110" };
@@ -304,6 +320,9 @@ int RL(int ZygZak[], int RL[])
 
 	return numOfData;
 }
+//Haku
+
+
 
 int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 {
@@ -449,11 +468,11 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  int tabRL2[64 * 2] = { 0 };
 		  int tabRL2_cb[64 * 2] = { 0 };
 		  int tabRL2_cr[64 * 2] = { 0 };
-		  int numOfDate, numOfDateCB, numOfDateCR;
+		  int numOfData, numOfDataCB, numOfDataCR;
 
-		  numOfDate = RL(tabRL, tabRL2);
-		  numOfDateCB = RL(cb_tabRL, tabRL2_cb);
-		  numOfDateCR = RL(cr_tabRL, tabRL2_cr);
+		  numOfData = RL(tabRL, tabRL2);
+		  numOfDataCB = RL(cb_tabRL, tabRL2_cb);
+		  numOfDataCR = RL(cr_tabRL, tabRL2_cr);
 
 		  //Kodowanie DC ró¿nicowe
 		  tempPrevDC = tabRL2[0];
@@ -468,12 +487,36 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  tabRL2_cr[0] = tabRL2_cr[0] - prevDC_cr;
 		  prevDC_cr = tempPrevDC_cr;
 
-		  //Kodowanie Huffman DC
+		  //Kodowanie Huffman 
+		  //DC luma
 		  int bitLen = 0;
-		  string* DC_encode=new string();
-		  huff->encodeDC(tabRL2[0], DC_encode,bitLen);
-		  
-		  cout << "DC " << *DC_encode << endl;
+		  string* encodeData=new string();
+		  huff->encodeDC(tabRL2[0], encodeData,bitLen);
+		  //AC luma
+		  for (int i = 1; i < numOfData; i += 2)
+		  {
+			  huff->encodeAC(tabRL2[i], tabRL2[i + 1], encodeData, bitLen);
+		  }
+		 
+		  //DC CB
+		  huff->encodeDC(tabRL2_cb[0], encodeData, bitLen);
+		  //AC CB
+		  for (int i = 1; i < numOfDataCB; i += 2)
+		  {
+			  huff->encodeAC(tabRL2_cb[i], tabRL2_cb[i + 1], encodeData, bitLen);
+		  }
+		 
+		  //DC CR
+		  huff->encodeDC(tabRL2_cr[0], encodeData, bitLen);
+		  //AC CR
+		  for (int i = 1; i < numOfDataCR; i += 2)
+		  {
+			  huff->encodeAC(tabRL2_cr[i], tabRL2_cr[i + 1], encodeData, bitLen);
+		  }
+		 
+
+
+		 
 	  }
   }
 
