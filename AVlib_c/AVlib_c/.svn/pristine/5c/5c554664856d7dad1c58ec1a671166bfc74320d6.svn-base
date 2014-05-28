@@ -1,0 +1,196 @@
+#include "xBitstream.h"
+#include "xEntropy.h"
+#include "xHuffman.h"
+#include "xSequence.h"
+#include "xCfg.h"
+#include "xTransform.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+using namespace std;
+using namespace AVlib;
+
+void example_entropy();
+void example_seq();
+void example_bitmap();
+void example_transform();
+void example_huff();
+void example_cfg();
+
+int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
+{
+  printf("Start....\n");
+  x_sys_print_compiler();
+  xCpuInfo CpuInfo;
+  CpuInfo.checkCPIUD();
+  CpuInfo.printCpuInfo();
+  CpuInfo.checkCompatibility();
+
+  example_seq();
+
+  system("pause");
+  return EXIT_SUCCESS;
+}
+
+void example_cfg()
+{
+  xCfgParser CfgParser;
+  CfgParser.loadFromFile("example.cfg");
+  string SampleField = CfgParser.getParamArg("Gamma_Selector", string("def"));
+  CfgParser.storeToFile("example2.cfg");  
+}
+
+void example_huff()
+{
+  xSeq* InSeq = new xSeq;
+  InSeq->createYUVRead(1920, 1088, 8, CrF_420, ClrSpc_BT709, TEXT("Poznan_Street_00_1920x1088_tex_cam03.yuv"), 8);
+  InSeq->getFrame();
+
+  xHuffman* Huff = new xHuffman;
+  Huff->BuildCodeTable(InSeq->m_Img->m_Cmp[0]);
+}
+
+void example_transform()
+{
+  xSeq* InSeq = new xSeq;
+  InSeq->createYUVRead(1920, 1088, 8, CrF_420, ClrSpc_BT709, TEXT("Poznan_Street_00_1920x1088_tex_cam03.yuv"), 8);
+  xSeq* OutSeq = new xSeq;
+  OutSeq->createYUVWrite(1920, 1088, 8, CrF_420, ClrSpc_BT709, TEXT("Poznan_Street_00_1920x1088_tex_cam03_b.yuv"), 8);
+
+  uint64 Ticks = 0;
+
+  for(int32 i=0; i<InSeq->m_NumOfFrames; i++)
+  {    
+    InSeq->getFrame();
+    Ticks += OutSeq->m_Img->m_Cmp[0]->transform_4x4(InSeq->m_Img->m_Cmp[0]);
+    OutSeq->m_Img->m_Cmp[1]->copy(InSeq->m_Img->m_Cmp[1]);
+    OutSeq->m_Img->m_Cmp[2]->copy(InSeq->m_Img->m_Cmp[2]);
+    OutSeq->putFrame();
+
+    uint64 SAD = OutSeq->m_Img->m_Cmp[0]->calcSSD(InSeq->m_Img->m_Cmp[0]);
+
+    fprintf(stdout, ".");
+  }
+  fprintf(stdout, "\n");
+
+  InSeq->destroy();   delete InSeq;
+  OutSeq->destroy();  delete OutSeq;
+
+  fprintf(stdout, "\n10^9 TICKS: %f\n", (double)(Ticks/1000)/1000000.0);   
+  fprintf(stdout, "END\n");
+}
+
+void example_bitmap()
+{
+  FILE_HANDLE InputFile = x_fopen(TEXT("samochody_1920x1080_0538.bmp"), TEXT("r"));
+  FILE_HANDLE OutputFile = x_fopen(TEXT("samochody_1920x1080_0538_out.bmp"), TEXT("w"));
+
+  xImg* InputImage = new xImg;
+  xImg* OutputImage = new xImg;
+  InputImage->getBMP(InputFile);
+  OutputImage->createCompatible(InputImage);
+  OutputImage->copy(InputImage);
+  OutputImage->putBMP(OutputFile);
+
+  InputImage->destroy();
+  OutputImage->destroy();
+  delete InputImage;
+  delete OutputImage;
+
+  x_fclose(InputFile);
+  x_fclose(OutputFile);
+}
+
+void example_seq()
+{
+  {
+    xSeq* InSeqYUV = new xSeq;
+    InSeqYUV->createYUVRead(128, 128, 8, CrF_420, ClrSpc_BT709, TEXT("Crew_128x128.yuv"), 0);
+
+    xSeq* OutSeqXSEQ = new xSeq;
+    OutSeqXSEQ->createXSEQWrite(128, 128, 8, CrF_420, ClrSpc_BT709, TEXT("Crew_128x128_a.xseq"), SeqCmpr_LZ4, SeqPred_None, 0);
+
+    uint64 Start = GetTickCount64();
+
+    for(int32 i=0; i<InSeqYUV->m_NumOfFrames; i++)
+    {
+      fprintf(stdout, ".");
+      InSeqYUV->getFrame();
+      OutSeqXSEQ->m_Img->copy(InSeqYUV->m_Img);
+      OutSeqXSEQ->putFrame();
+    }
+    fprintf(stdout, "\n");
+
+    uint64 Time = GetTickCount64() - Start;
+    double FPS  = 1000.0/((double)Time/(double)InSeqYUV->m_NumOfFrames);
+
+    uint64 SizeYUV = x_fsize(InSeqYUV->m_File);
+    uint64 SizeXSQE = x_fsize(OutSeqXSEQ->m_File);
+    double Ratio = ((double)(SizeYUV-SizeXSQE)/(double)(SizeYUV))*100.0;
+    
+    fprintf(stdout, "Frames: %d, Time: %d ms, FPS: %.2f, Ratio: %.2f%%\n",InSeqYUV->m_NumOfFrames, Time, FPS, Ratio);
+
+    InSeqYUV->destroy();   delete InSeqYUV;
+    OutSeqXSEQ->destroy(); delete OutSeqXSEQ;
+  }
+
+  //-------------------------------------------------------------------------
+  {
+    xSeq* InSeqXSEQ = new xSeq;
+    InSeqXSEQ->createXSEQRead(TEXT("Crew_128x128_a.xseq"), 0);
+
+    xSeq* OutSeqYUV = new xSeq;
+    OutSeqYUV->createYUVWrite(128, 128, 8, CrF_420, ClrSpc_BT709, TEXT("Crew_128x128_b.yuv"), 0);
+
+
+    uint64 Start = GetTickCount64();
+
+    for(int32 i=0; i<InSeqXSEQ->m_NumOfFrames; i++)
+    {
+      fprintf(stdout, ".");
+      InSeqXSEQ->getFrame();
+      OutSeqYUV->m_Img->copy(InSeqXSEQ->m_Img);
+      OutSeqYUV->putFrame();
+    }
+    fprintf(stdout, "\n");
+
+    uint64 Time = GetTickCount64() - Start;
+    double FPS  = 1000.0/((double)Time/(double)InSeqXSEQ->m_NumOfFrames);
+    uint64 SizeYUV = x_fsize(OutSeqYUV->m_File);
+    uint64 SizeXSQE = x_fsize(InSeqXSEQ->m_File);
+    double Ratio = ((double)(SizeYUV-SizeXSQE)/(double)(SizeYUV))*100.0;
+    
+    fprintf(stdout, "Frames: %d, Time: %d ms, FPS: %.2f, Ratio: %.2f%%\n",InSeqXSEQ->m_NumOfFrames, Time, FPS, Ratio);
+
+    InSeqXSEQ->destroy(); delete InSeqXSEQ;
+    OutSeqYUV->destroy(); delete OutSeqYUV;
+  }
+}
+
+void example_entropy()
+{
+  //fstream output_file;
+  //output_file.open(L"out.bin", ios_base::out | ios_base::binary);
+  
+  stringstream some_stream;
+
+  xBitstreamWriter BitWriter;
+  BitWriter.create(2048);
+  BitWriter.init();
+  xEntropy::WriteGolombRice(&BitWriter, 41, 1);
+  BitWriter.writeAlignZero();
+  BitWriter.flushToStream(&some_stream);
+
+  some_stream.flush();
+  some_stream.sync();
+  
+  xBitstreamReader BitReader;
+  BitReader.create(2048);
+  BitReader.init();
+  BitReader.fetchFromStream(&some_stream);
+  int32 abc = xEntropy::ReadGolombRice(&BitReader, 1);
+
+  //output_file.flush();
+  //output_file.close();
+}

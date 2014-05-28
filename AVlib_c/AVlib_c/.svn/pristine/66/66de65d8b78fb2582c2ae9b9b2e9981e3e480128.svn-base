@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source">
+      <UniqueIdentifier>{d5103e6f-b066-4cff-837a-edd628e3ec40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\External">
+      <UniqueIdentifier>{770bd42d-a412-4d47-9d9c-559db37ded3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="BaseHeaders">
+      <UniqueIdentifier>{4b469b04-0deb-43e8-b19b-b77ad2405b18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Entropy and Bitstream">
+      <UniqueIdentifier>{75bf997e-6091-4e22-9a3f-b39c99b886bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Image and Sequence">
+      <UniqueIdentifier>{33a7c550-7831-4546-ba8a-8bcfe1a5f1a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Threading">
+      <UniqueIdentifier>{2c84b01f-49a2-405d-8f63-5f18aa074483}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\external\lz4hc.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\external\lz4.h">
+      <Filter>Source\External</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xSys.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xConsole.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xCommon.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xCompiler.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xDefines.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xLicense.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xSmallOps.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xLanguage.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xConstants.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xType.h">
+      <Filter>BaseHeaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xDistortion.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xColorSpace.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xTransform.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xChecksum.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xBitstream.h">
+      <Filter>Source\Entropy and Bitstream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xEntropy.h">
+      <Filter>Source\Entropy and Bitstream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xHuffman.h">
+      <Filter>Source\Entropy and Bitstream</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xCmp.h">
+      <Filter>Source\Image and Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xImage.h">
+      <Filter>Source\Image and Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xSequence.h">
+      <Filter>Source\Image and Sequence</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xRing.h">
+      <Filter>Source\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xThreadPool.h">
+      <Filter>Source\Threading</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xCfg.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xPixel.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\source\lib_gen2\xQuant.h">
+      <Filter>Source</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\external\lz4.c">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\external\lz4hc.c">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xConsole.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xSys.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xDistortion.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xColorSpace.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xTransform.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xChecksum.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\external\miniz.c">
+      <Filter>Source\External</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xBitstream.cpp">
+      <Filter>Source\Entropy and Bitstream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xEntropy.cpp">
+      <Filter>Source\Entropy and Bitstream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xHuffman.cpp">
+      <Filter>Source\Entropy and Bitstream</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xCmp.cpp">
+      <Filter>Source\Image and Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xImage.cpp">
+      <Filter>Source\Image and Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xSequence.cpp">
+      <Filter>Source\Image and Sequence</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xRing.cpp">
+      <Filter>Source\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xThreadPool.cpp">
+      <Filter>Source\Threading</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xCfg.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xPixel.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xQuant.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

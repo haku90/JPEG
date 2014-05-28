@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\source\external\lz4.h" />
+    <ClInclude Include="..\source\external\lz4hc.h" />
+    <ClInclude Include="..\source\lib_gen2\xBitstream.h" />
+    <ClInclude Include="..\source\lib_gen2\xCfg.h" />
+    <ClInclude Include="..\source\lib_gen2\xChecksum.h" />
+    <ClInclude Include="..\source\lib_gen2\xCmp.h" />
+    <ClInclude Include="..\source\lib_gen2\xColorSpace.h" />
+    <ClInclude Include="..\source\lib_gen2\xCommon.h" />
+    <ClInclude Include="..\source\lib_gen2\xCompiler.h" />
+    <ClInclude Include="..\source\lib_gen2\xConsole.h" />
+    <ClInclude Include="..\source\lib_gen2\xConstants.h" />
+    <ClInclude Include="..\source\lib_gen2\xDefines.h" />
+    <ClInclude Include="..\source\lib_gen2\xDistortion.h" />
+    <ClInclude Include="..\source\lib_gen2\xEntropy.h" />
+    <ClInclude Include="..\source\lib_gen2\xHuffman.h" />
+    <ClInclude Include="..\source\lib_gen2\xImage.h" />
+    <ClInclude Include="..\source\lib_gen2\xLanguage.h" />
+    <ClInclude Include="..\source\lib_gen2\xLicense.h" />
+    <ClInclude Include="..\source\lib_gen2\xPixel.h" />
+    <ClInclude Include="..\source\lib_gen2\xQuant.h" />
+    <ClInclude Include="..\source\lib_gen2\xRing.h" />
+    <ClInclude Include="..\source\lib_gen2\xSequence.h" />
+    <ClInclude Include="..\source\lib_gen2\xSmallOps.h" />
+    <ClInclude Include="..\source\lib_gen2\xSys.h" />
+    <ClInclude Include="..\source\lib_gen2\xThreadPool.h" />
+    <ClInclude Include="..\source\lib_gen2\xTransform.h" />
+    <ClInclude Include="..\source\lib_gen2\xType.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\source\external\lz4.c" />
+    <ClCompile Include="..\source\external\lz4hc.c" />
+    <ClCompile Include="..\source\external\miniz.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="..\source\lib_gen2\xBitstream.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xCfg.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xChecksum.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xCmp.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xColorSpace.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xConsole.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xDistortion.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xEntropy.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xHuffman.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xImage.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xPixel.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xQuant.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xRing.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xSequence.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xSys.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xThreadPool.cpp" />
+    <ClCompile Include="..\source\lib_gen2\xTransform.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals" />
+  <PropertyGroup Label="Globals">
+    <RootNamespace>AVlib</RootNamespace>
+    <ProjectName>lib_gen2</ProjectName>
+    <ProjectGuid>{3D58865C-7267-BCEA-28C7-B26A0433F10C}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)\bin\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IntDir>$(SolutionDir)\tmp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)\bin\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IntDir>$(SolutionDir)\tmp\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)_$(Platform)_$(Configuration)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <MinimalRebuild>false</MinimalRebuild>
+      <BrowseInformation>true</BrowseInformation>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <CompileAs>Default</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <OmitFramePointers>false</OmitFramePointers>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Bscmake>
+      <PreserveSbr>true</PreserveSbr>
+    </Bscmake>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <OpenMPSupport>true</OpenMPSupport>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

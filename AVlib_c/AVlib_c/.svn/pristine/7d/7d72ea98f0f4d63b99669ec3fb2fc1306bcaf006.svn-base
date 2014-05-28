@@ -1,0 +1,100 @@
+# Off, Once, Continuous
+
+Gain_Auto 		=	Off			# Off, Once, Continuous
+Gain_Selector	:		All			# All, AnalogAll, DigitalAll, Tap1, Tap2, Tap3, Tap4, Red, Green, Blue
+Gain_RAW			200			#
+Black_Level_Selector 		All			# All, AnalogAll, DigitalAll, Tap1, Tap2, Tap3, Tap4, Red, Green, Blue
+Black_Level_RAW			32			#
+Balance_White_Auto		Once			# Off, Once, Continuous	
+Balance_Ratio_Selector		Red			# Red, Green, Blue
+Balance_Ratio_RAW		64			#
+Gamma_Enable			0			#
+Gamma_Selector			sRGB			# User, sRGB
+Digital_Shift			0			#
+
+[Analog_Controls]    #section comment
+{
+Gain_Auto 			Off			# Off, Once, Continuous
+Gain_Selector			All			# All, AnalogAll, DigitalAll, Tap1, Tap2, Tap3, Tap4, Red, Green, Blue
+Gain_RAW			200			#
+Black_Level_Selector 		All			# All, AnalogAll, DigitalAll, Tap1, Tap2, Tap3, Tap4, Red, Green, Blue
+Black_Level_RAW			32			#
+Balance_White_Auto		Once			# Off, Once, Continuous	
+Balance_Ratio_Selector		Red			# Red, Green, Blue
+Balance_Ratio_RAW		64			#
+Gamma_Enable			0			#
+Gamma_Selector			sRGB			# User, sRGB
+Digital_Shift			0			#
+}
+
+[Image_Format_Controls]
+{
+Sensor_Digitization_Taps	Four			# One, Two, Three, Four
+Pixel_Format			BayerGB8		# Mono8, BayerGB8, BayerGB12, YUV422Packed, YUV422_YUYV_Packed, BayerGB12Packed, RGB12V1Packed
+Reverse_X			0			#
+Reverse_Y			0			#
+Test_Image_Selector		Off			# Off, Black, White, GreyHorizontalRamp, GreyVerticalRamp, GreyHorizontalRampMoving, GreyVerticalRampMoving, 
+							# HorzontalLineMoving, VerticalLineMoving, ColorBar, FrameCounter, DeviceSpecific, FixedDiagonalGrayGradient_8Bit, 
+							# MovingDiagonalGrayGradient_8Bit, MovingDiagonalGrayGradient_12Bit, MovingDiagonalGrayGradientFeatureTest_8Bit, MovingDiagonalGrayGradientFeatureTest_12Bit, 
+							# MovingDiagonalColorGradient, Testimage1, Testimage2, Testimage3, Testimage4, Testimage5, Testimage6, Testimage7 
+}
+
+[AOI_Controls]
+{
+Width				1920			#
+Height				1080			#
+X_Offset			18			#
+Y_Offset			18			#
+Center_X			1			#
+Center_Y			1			#
+}
+
+[Acquisition_Controls]
+{
+Acquisition_Frame_Rate_Enable	1			# 0 - off, 1 - on (fixed fps)
+Acquisition_Frame_Rate		25.0			# FPS Value	
+Acquisition_Frame_Count		1			#
+
+Trigger_Mode			0			# 0 - off, 1 - on
+Trigger_Selector		FrameStart		# AcquisitionStart, FrameStart
+Trigger_Source			Line1			# Software, Line1, Line2
+Trigger_Activation		RisingEdge		# RisingEdge, FallingEdge
+
+Exposure_Mode			Timed			# Timed, TriggerWidth
+Exposure_Auto			Once			# Off, Once, Continuous 
+Exposure_Time			8000			#
+Acquisition_Status_Selector     FrameTriggerWait	# AcquisitionTriggerWait, FrameTriggerWait
+}
+
+[Digital_IO_Controls]
+{
+Line_Selector			Out1			# Line1, Line2, Line3, Line4, Line5, Line6, Line7, Line8,
+							# CC1, CC2, CC3, CC4, In1, In2, In3, In4, Out1, Out2, Out3, Out4
+Line_Mode			Output			# Input, Output
+Line_Logic			Positive		# Positive, Negative
+Line_Source			ExposureActive		# ExposureActive, FrameTriggerWait, TimerActive, UserOutput, AcquisitionTriggerWait
+Line_Inverter			0			# 0 - off, 1 - on
+Line_Status			0			# 0 - off, 1 - on
+User_Output_Selector		UserOutput1		# UserOutput1, UserOutput2, UserOutput3, UserOutput4, UserOutput5, UserOutput6, UserOutput7, UserOutput8,
+							# UserOutputCC1, UserOutputCC2, UserOutputCC3, UserOutputCC4 
+User_Output_Value		0			# 0 - off, 1 - on
+}
+
+[Counter_and_Timer_Controls]
+{
+Timer_Selector			Timer_1			# Timer_1, Timer_2, Timer_3, Timer_4
+Timer_Delay_RAW			0			#
+Timer_Duration_RAW		4089			#
+Timer_Trigger_Source		ExposureStart		# ExposureStart
+Timer_Trigger_Activation	RisingEdge		# RisingEdge
+Counter_Selector		Counter1		# Counter1, Counter2
+Counter_Event_Source		FrameTrigger		# FrameTrigger
+Counter_Reset_Source		Off			# Off, Software, Line1, Line2
+}
+
+[LUT_Controls]
+{
+LUT_Enable			0			#
+LUT_Index			0			#
+LUT_Value			0			#
+}

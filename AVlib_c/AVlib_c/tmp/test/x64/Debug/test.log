@@ -1,0 +1,23 @@
+﻿Build started 2014-05-28 15:48:29.
+     1>Project "e:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\projects\test.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I..\source\ /I..\source\lib_gen1 /I..\source\lib_gen2 /Zi /nologo /W3 /WX- /MP /Od /D _UNICODE /D UNICODE /Gm- /EHsc /RTC1 /MDd /GS /arch:SSE2 /fp:strict /Zc:wchar_t /Zc:forScope /GR- /Fo"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\\" /Fd"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\vc120.pdb" /FR"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\\" /Gd /TP /errorReport:prompt ..\source\main.cpp
+     1>cl : Command line warning D9002: ignoring unknown option '/arch:SSE2'
+         main.cpp
+     1>..\source\main.cpp(32): warning C4244: 'return' : conversion from 'double' to 'float', possible loss of data
+     1>..\source\main.cpp(52): warning C4244: '=' : conversion from 'double' to 'int16', possible loss of data
+     1>..\source\main.cpp(71): warning C4244: '=' : conversion from 'double' to 'int16', possible loss of data
+     1>..\source\main.cpp(266): warning C4267: '=' : conversion from 'size_t' to 'int', possible loss of data
+     1>..\source\main.cpp(292): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+     1>..\source\main.cpp(345): warning C4267: '=' : conversion from 'size_t' to 'int', possible loss of data
+     1>..\source\main.cpp(420): warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\bin\test_x64_Debug.exe" /INCREMENTAL /NOLOGO /LIBPATH:..\bin lib_gen2_x64_Debug.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\bin\test_x64_Debug.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\bin\test_x64_Debug.lib" /MACHINE:X64 E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\main.obj
+         test.vcxproj -> E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\bin\test_x64_Debug.exe
+       BscMake:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\bscmake.exe /nologo /o"E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\bin\test_x64_Debug.bsc" /n E:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\\tmp\test\x64\Debug\main.sbr
+     1>Done Building Project "e:\studia\sem_VIII\MS\Projekt\AVlib_c\AVlib_c\projects\test.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:04.32
