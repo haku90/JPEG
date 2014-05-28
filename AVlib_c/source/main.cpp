@@ -173,10 +173,14 @@ public:
 	const static string CW_Table_DC[12];
 	// D³ugoœæ s³ów kodowych, DC
 	const static int  CW_Len[12];
+	// Liczba kodow o danej d³ugoœci
+	const static int CW_Table_DC_numOfCode[12];
 	//S³owa kodowe dla AC
 	const static string CW_Table_AC[16][11];
 	//D³ugoœæ s³ów kodowych, AC
 	const static int CW_Len_AC[16][11];
+	//Liczba s³ów kodowych o danej d³ugoœci
+	const static int CW_Table_AC_numOfCode[16][17];
 	// kategoryzacja kodowanych wartoœci
 	int categoryHuffman(int value)
 	{
@@ -198,50 +202,252 @@ public:
 
 
 	
-void encodeDC(int DC, string* result,int &bitLen)
+	void encodeDC(int DC, string* result, int &bitLen)
 	{
 		int category = categoryHuffman(DC);
 		bitLen = CW_Len[category];
-		
+
 		//strcpy(result,&CW_Table_DC[category]);
-		
+		string *temp= new string();
 		*result += CW_Table_DC[category];
 		int value = DC;
-		if (DC < 0)
+ 		if (DC < 0)
 			value += (int)pow(2, category) - 1;
-		for (int i = bitLen - 1; i>bitLen - category - 1; i--)
+		for (int i = category - 1; i >= 0; i--)
 		{
 			if (value % 2 == 1)
-				*result += "1";
+				temp->insert(temp->begin(), '1');
 			else
-				*result += "0";
+				temp->insert(temp->begin(), '0');
 			value /= 2;
 		}
-	
-	
+		*result += *temp;
 
 }
 void encodeAC(int R, int L, string* result, int &bitLen)
 {
+	
 	int category = categoryHuffman(L);
 	bitLen = CW_Len_AC[R][category];
 	*result += CW_Table_AC[R][category];
+	string *temp = new string();
 	int value = L;
 	if (L < 0)
 		value += (int)pow(2, category) - 1;
-	for (int i = bitLen - 1; i>bitLen - category - 1; i--)
+	for (int i = category - 1; i >= 0; i--)
 	{
 		if (value % 2 == 1)
-			*result += "1";
+			temp->insert(temp->begin(),'1');
 		else
-			*result += "0";
+			temp->insert(temp->begin(),'0');
 		value /= 2;
 	}
+	*result += *temp;
 }
+void decodeDC(string &value,int decodeTabRL[])
+{
+	bool stop = true;
+	string temp = "";
+	int SearchCodeWord = 0;
+	int j = 0;
+	int NumOfCodeWord = 0;
+	string DecodeCodeWord;
+	int category = 0;
+	int bitLen = 0;
+	while (stop)
+	{
+		if (CW_Table_DC_numOfCode[j] != 0)
+		{
+			for (int i = 0; i < j - NumOfCodeWord; i++)
+			{
+				temp += value[i + NumOfCodeWord];
+
+			}
+			NumOfCodeWord = temp.length();
+			//cout << "S³owo do zdekodowania" << endl;
+			//cout << temp << endl;
+		}
+		for (int i = 0; i < CW_Table_DC_numOfCode[j]; i++)
+		{
+			if (temp == CW_Table_DC[i + SearchCodeWord])
+			{
+				//cout << "Found" << endl;
+				//cout << CW_Table_DC[i + SearchCodeWord] << endl;
+				stop = false;
+				DecodeCodeWord = CW_Table_DC[i + SearchCodeWord];
+				category = i + SearchCodeWord;
+			}
+		}
+		SearchCodeWord += CW_Table_DC_numOfCode[j];
+		j++;
+	}
+	bitLen = CW_Len[category];
+	int powOf2 = 1;
+	string decodeValue;
+	int iDecodeValue = 0;
+	int power = category - 1;
+	for (int i = 1; i <= category; i++)
+	{
+
+		powOf2 = pow(2, power--);
+		if (value[i + temp.length() - 1] == '1')
+		{
+			iDecodeValue += powOf2;
+
+		}
+
+	}
+	
+	if (value[temp.length()] == '0')
+	{
+		iDecodeValue -= (int)pow(2, category) - 1;
+	}
+	
+	//cout << "wartostsc zdekodowana" << endl;
+	//cout << iDecodeValue << endl;
+	value.erase(value.begin(), value.begin() + category+temp.length());
+	//cout << "new value" << endl;
+	//cout << value << endl;
+	decodeTabRL[0] = iDecodeValue;
+}
+void decodeAC(string &value,int decodeTabRL[])
+{
+	int numOfIter = 1;
+	bool EOB = true;
+	//	for (int k = 0; k < 2; k++)
+	//{
+	
+	while (EOB)
+	{
+		bool stop = true;
+		string temp = "";
+		int SearchCodeWord = 1;
+		int j = 0;
+		int k = 0;
+		int NumOfCodeWord = 0;
+		string DecodeCodeWord;
+		int category = 0;
+		int bitLen = 0;
+		bool notToWrite = true;
+		while (stop)
+		{
+			while (k < 17 && stop)
+			{
+				while (j < 16 && stop)
+				{
+
+					if (CW_Table_AC_numOfCode[j][k] != 0)
+					{
+						for (int i = 0; i < k - NumOfCodeWord; i++)
+						{
+							temp += value[i + NumOfCodeWord];
+						}
+						NumOfCodeWord = temp.length();
+						
+
+						for (int i = 0; i < k; i++)
+						{
+							SearchCodeWord += CW_Table_AC_numOfCode[j][i];
+
+						}
+						if (j == 0 && k == 4 && temp == "1010")
+						{
+							stop = false;
+							EOB = false;
+							decodeTabRL[numOfIter++] = 0;
+							decodeTabRL[numOfIter++] = 0;
+							value.erase(value.begin(), value.begin() + category + temp.size());
+							return;
+						}
+						
+					
+						for (int i = 0; i < CW_Table_AC_numOfCode[j][k]; i++)
+						{
+							/*
+							cout << "wartosc do porownania" << endl;
+							cout << temp << endl;
+							cout << "wartosc z tablicy huffmana" << endl;
+							cout << CW_Table_AC[j][i + SearchCodeWord] << endl;
+							*/
+							if (temp == CW_Table_AC[j][i + SearchCodeWord])
+							{
+								DecodeCodeWord = CW_Table_AC[j][i + SearchCodeWord];
+								category = i + SearchCodeWord;
+								decodeTabRL[numOfIter++] = j;
+								stop = false;
+								
+							}
+						}
+						if (temp.size() == 11 && temp == "11111111001")
+						{
+							//cout << "F/0 ZRL" << endl;
+							decodeTabRL[numOfIter++] = 15;
+							decodeTabRL[numOfIter++] = 0;
+							value.erase(value.begin(), value.begin() + category + temp.size());
+							stop = false;
+							notToWrite = false;
+						}
+					}
+					j++;
+					SearchCodeWord = 1;
+				
+				}
+				
+				j = 0;
+				k++;
+			}
+
+
+		}
+		if (notToWrite)
+		{
+			bitLen = CW_Len[category];
+			int powOf2 = 1;
+			string decodeValue;
+			int iDecodeValue = 0;
+			/*
+			for (int i = 0; i < category; i++)
+			{
+			decodeValue += value[NumOfCodeWord + i];
+			}
+			cout << "wartosc do zdekodownaia" << endl;
+			cout << decodeValue << endl;
+			*/
+			int power = category - 1;
+			for (int i = 1; i <= category; i++)
+			{
+
+				powOf2 = pow(2, power--);
+				if (value[i + temp.length() - 1] == '1')
+				{
+					iDecodeValue += powOf2;
+
+				}
+
+			}
+
+			if (value[temp.length()] == '0')
+			{
+				iDecodeValue -= (int)pow(2, category) - 1;
+			}
+
+			//cout << "wartostsc zdekodowana" << endl;
+			//cout << iDecodeValue << endl;
+			value.erase(value.begin(), value.begin() + category + temp.length());
+			//cout << "new value" << endl;
+			//cout << value << endl;
+
+			decodeTabRL[numOfIter++] = iDecodeValue;
+		}
+		}
+		//}
+	}
+
 };
 const string Huffman::CW_Table_DC[12] = { "00", "010", "011", "100", "101", "110", "1110", "11110", "111110",
 "1111110", "11111110", "111111110" };
 const int Huffman::CW_Len[12] = { 2, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20 };
+const int Huffman::CW_Table_DC_numOfCode[12] = { 0, 0, 1, 5, 1, 1, 1, 1, 1, 1 };
 const string Huffman::CW_Table_AC[16][11] = {
 	"1010", "00", "01", "100", "1011", "11010", "1111000", "11111000", "1111110110", "1111111110000010", "1111111110000011",
 	"", "1100", "11011", "1111001", "111110110", "11111110110", "1111111110000100", "1111111110000101", "1111111110000110", "1111111110000111", "1111111110001000",
@@ -278,6 +484,27 @@ const int Huffman::CW_Len_AC[16][11] = {
 	0, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
 	11, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26
 };
+	const int Huffman:: CW_Table_AC_numOfCode[16][17] = {
+	
+		0, 0, 2, 1, 1, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 2,
+		0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 5,
+		0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 6,
+		0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 7,
+		0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 8,
+		0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 8,
+		0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 8,
+		0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 8,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 8,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 9,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 9,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 9,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 9,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 9,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10,
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10
+
+	};
+
 int RL(int ZygZak[], int RL[])
 {
 	RL[0] = ZygZak[0]; // DC
@@ -319,6 +546,45 @@ int RL(int ZygZak[], int RL[])
 	}
 
 	return numOfData;
+}
+void deRL(int DeZygZak[], int RL[])
+{
+	DeZygZak[0] = RL[0];
+	int i = 1;
+	int numOfZyg = 1;
+	while (i < 127)
+	{
+		
+
+		if (RL[i] == 0 && RL[i+1]!=0)
+		{
+			DeZygZak[numOfZyg++] = RL[i + 1];
+		}
+		if (RL[i] != 0 && RL[i + 1] != 0)
+		{
+			for (int j = 0; j < RL[i]; j++)
+			{
+				DeZygZak[numOfZyg++] = 0;
+			}
+			DeZygZak[numOfZyg++] = RL[i + 1];
+		}
+		if (RL[i] == 15 && RL[i + 1]== 0)
+		{
+			for (int j = 0; j < 16; j++)
+			{
+				DeZygZak[numOfZyg++] = 0;
+			}
+		
+		}
+		
+ 		if (RL[i] == 0 && RL[i + 1] == 0)
+		{
+			return;
+		}
+
+			i += 2;
+	}
+
 }
 //Haku
 
@@ -425,6 +691,12 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
   int tempPrevDC = 0;
   int tempPrevDC_cb = 0;
   int tempPrevDC_cr = 0;
+
+  int DecodeprevDC = 0;
+  int DecodeprevDC_cb = 0;
+  int DecodeprevDC_cr = 0;
+
+ 
   Huffman* huff = new Huffman();
   //Podzial obrazu na makrobloki 8x8.
   for (int y = 0; y < SizeY/8; y++)
@@ -463,7 +735,7 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  Tablcia int 64 - elementowa dla kazdego makrobloku i dla kazdej skladowej.
 		  Uporzadowanie zygzakowate zgodne z rys. 7.3. na stronie 356 w ksiazce "Obraz cyfrowy"
 		  */
-
+		  //Haku
 		  //RL
 		  int tabRL2[64 * 2] = { 0 };
 		  int tabRL2_cb[64 * 2] = { 0 };
@@ -473,12 +745,13 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  numOfData = RL(tabRL, tabRL2);
 		  numOfDataCB = RL(cb_tabRL, tabRL2_cb);
 		  numOfDataCR = RL(cr_tabRL, tabRL2_cr);
-
+		
 		  //Kodowanie DC ró¿nicowe
+		 
 		  tempPrevDC = tabRL2[0];
 		  tabRL2[0] =tabRL2[0] - prevDC;
 		  prevDC = tempPrevDC;
-
+	
 		  tempPrevDC_cb = tabRL2_cb[0];
 		  tabRL2_cb[0] = tabRL2_cb[0] - prevDC_cb;
 		  prevDC_cb = tempPrevDC_cb;
@@ -495,7 +768,7 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  //AC luma
 		  for (int i = 1; i < numOfData; i += 2)
 		  {
-			  huff->encodeAC(tabRL2[i], tabRL2[i + 1], encodeData, bitLen);
+ 			  huff->encodeAC(tabRL2[i], tabRL2[i + 1], encodeData, bitLen);
 		  }
 		 
 		  //DC CB
@@ -513,10 +786,47 @@ int wmain( int argc, wchar_t *argv[ ], wchar_t *envp[ ])
 		  {
 			  huff->encodeAC(tabRL2_cr[i], tabRL2_cr[i + 1], encodeData, bitLen);
 		  }
-		 
+		//Dekodowanie Huffman
+		  int DecodetabRL2[64 * 2] = { 0 };
+		  int DecodetabRL2_cb[64 * 2] = { 0 };
+		  int DecodetabRL2_cr[64 * 2] = { 0 };
+		//DC Luma
+		  huff->decodeDC(*encodeData,DecodetabRL2);
+		//AC Luma
+		  huff->decodeAC(*encodeData, DecodetabRL2);
+		//DC CB
+		  huff->decodeDC(*encodeData, DecodetabRL2_cb);
+		//AC CB
+		  huff->decodeAC(*encodeData, DecodetabRL2_cb);
+		//DC CR
+		  huff->decodeDC(*encodeData, DecodetabRL2_cr);
+		//AC CR
+		  huff->decodeAC(*encodeData, DecodetabRL2_cr);
+		 //D_RL
+		//Dekodowanie roznicowe DC
+		  
+		  DecodetabRL2[0] = DecodetabRL2[0] + DecodeprevDC;
+		  DecodeprevDC = DecodetabRL2[0];
+		  
 
+		  DecodetabRL2_cb[0] = DecodetabRL2_cb[0] + DecodeprevDC_cb;
+		  DecodeprevDC_cb = DecodetabRL2_cb[0];
 
-		 
+		  DecodetabRL2_cr[0] = DecodetabRL2_cr[0] + DecodeprevDC_cr;
+		  DecodeprevDC_cr = DecodetabRL2_cr[0];
+		  // dekodowanie par RL
+		  int deZygtabRL[64] = { 0 };
+		  int deZygtabRL_cb[64] = { 0 };
+		  int deZygtabRL_cr[64] = { 0 };
+
+		  deRL(deZygtabRL, DecodetabRL2);
+		  deRL(deZygtabRL_cb, DecodetabRL2_cb);
+		  deRL(deZygtabRL_cr, DecodetabRL2_cr);
+		  /*
+		  haku
+			deZygTabRL to tablice do twojego zygzaka;) 
+		  */
+		
 	  }
   }
 
